@@ -1,64 +1,211 @@
-### How User Enters Queue
+# High level process overview
+
+The server will store client sessions in queue with a Matcher object.  This object will store a unique identifier, the client's IP, and a list of other clients' identifiers if they fail a ping test against the client.  The server will pass an array of potential opponents' IP addresses and IDs to the client.  The client runs a ping test on each IP and sends a response with the average ping to each IP and the ID for that IP.  If pings were all too high, the server stores IDs whose ping were too high in the client's matcher object.  If there was an acceptable ping, the server responds that a match is ready and that the client that did the ping test should open a port.
+
+The shouldStartMatch KVP in a response object indicates that there is a host with a session open and waiting for the guest to join.
+
+
+# How User Enters Queue
 1. User starts CCCaster
 2. User selects "Matchmaking"
 3. CLIENT will POST to the SERVER with CLIENT's IP Address using ROUTE /joinMatchmakingQueue/
 4. SERVER receives CLIENT's IP
-5. SERVER MATCHMAKER service creates a MATCHER object with a unique ID and stores it in a QUEUE object
-6. SERVER responds to CLIENT with the ID
+5. SERVER MATCHMAKER service creates a MATCHER object with a unique matcherID and stores it in a queue
+6. SERVER responds to CLIENT with the client's matcherID
 
-### How User Gets a Match
-1. CLIENT will POST to SERVER with MATCHER ID using ROUTE /get-matcher-address/
-2. SERVER will select a MATCHER at random
+# How User Gets a Match
+## Matchmaking in 3 steps:
+- Client gets matcher addresses to evaluate and run ping tests on each
+- Post ping test results
+- Open port and send the open port# to the server
+---
 
-Ping result sent to server
-Server recieves ping result and matcherID
-Server evaluates ping result
-(Happy path) Server responds to say "go ahead and start a match and wait to be contacted by this IP" (port post route)
-Server also flags the matcher that was tested against with an IP:port to contact
-Next time matcher uses /get-matcher-address/, response contains IP address and port to start match immediately
+## Get matcher address
+- CLIENT will POST to SERVER with MATCHER ID using ROUTE /get-matcher-address/
 
-### Routes:
-#### /join-matchmaking-queue/
-For a client to request a MATCHER ID and be added to matchmaking queue.
-POST
-Body contains:
-IP Address - String
+    *IF MATCHER with corresponding ID has no waiting match:*
 
-Response options:
-201: matcherID - String
-400: invalid request, try again
-500: server error
+- SERVER will select a number of MATCHERs (randomly)
+- SERVER responds with a response with an array of objects containing a MATCHER ID and IP Address
 
-#### /get-matcher-address/${matcherID}
-For a client to request an IP address to ping test against.
-GET
-Response options:
-204: no other matchers, please retry in ## seconds
-200: matcherAddress - String (attempt Ping test against this IP)
-     matcherID - String (use this in /ping-result/ to identify user ping tested against)
-400: invalid request, try again
-500: server error
+    *IF MATCHER with corresponding ID has a waiting match:*
 
-#### /ping-result/
+- SERVER responds with a code to start a match and the host's IP address and port
+- SERVER removes both MATCHERs from queue
 
-#### /port-open/
+## Post ping test results
+- CLIENT will ping test each IP address
+- CLIENT uses /ping-result/ route to POST an array of objects containing MATCHER IDs and ping test results
+
+    *IF MATCHER with corresponding ID has a waiting match:*
+
+    - SERVER responds with a code to start a match and the host's IP address and port
+    - SERVER removes both MATCHERs from queue
+
+    *IF MATCHER with corresponding ID has no waiting match:*
+
+    - SERVER evaluates ping results
+    - IF bad results only, SERVER stores the bad MATCHER IDs in the MATCHER.badMatchIds arr and responds with a code to call /get-matcher-address/
+
+    *IF Good result...*
+
+    - SERVER responds with a code to open a port the selected MATCHER ID for netplay
+
+## Open port
+- CLIENT opens a port and posts the open port, local IP address, local, MATCHER ID, and matched opponent's MATCHER ID via /port-open/ to the SERVER
+- SERVER marks the two MATCHERs as selected opponents, host and guest, and adds the hosts IP address and port to the guest's MATCHER object
+- Upon guest MATCHER recieving the order to join the host, both MATCHER objects are removed from queue
+
+---
+
+# Routes:
+## **/join-matchmaking-queue/**
+### For a client to request a MATCHER ID and be added to matchmaking queue.
+### Responses contain the client's matcherID or the client's matcherID and an array of MATCHERs to ping test against.
+### If matchers arr is empty, wait some number of seconds before trying /get-matcher-address/.
+**Method:** POST
+
+### Request body contains:
+```
+{
+    ipAddress: string
+}
+```
+
+### Response options:
+```
+{
+    status: 200,
+    body: {
+        clientMatcherID: string,
+        matchers: [
+            {
+            matcherID: string,
+            address: string
+            }
+        ]
+    }
+}
+```
+---
+
+## **/get-matcher-address/**
+
+### For a client to request an IP address to ping test against.
+### Responses can be an array of potential users to ping test or an IP address and port to start a match with.
+### If response is 204, wait some number of seconds and try /get-matcher-address/ again.
+### If response's shouldStartMatch is false, matchAddress and matchPort will not be present.
+### If response's shouldStartMatch is true, matchers arr will not be present.
+**Method:**
+
+### Request body contains:
+```
+{
+    clientMatcherId
+}
+```
+
+### Response options:
+```
+{
+    status: 204
+}
+```
+```
+{
+    status: 200,
+    shouldStartMatch: bool,
+    matchAddress: string,
+    matchPort: string,
+    matchers: [
+        {
+            matcherID: string,
+            address: string
+        }
+    ]
+}
+```
+---
+
+## **/ping-result/**
+### For a client to send the results of ping tests to different MATCHERs to the SERVER.
+### If response's shouldStartMatch is false, matchAddress and matchPort will not be present.
+### If response's shouldStartMatch is true, matchers arr will not be present.
+**Method:** POST
+
+### Request body contains:
+```
+{
+    clientMatcherId: string,
+    matchers: [
+        {
+        pingResult: string,
+        matcherID: string
+        }
+    ]
+}
+```
+### Response options
+```
+{
+    status: 204
+}
+```
+```
+{
+    status: 200,
+    shouldStartMatch: bool,
+    matcherAddress: string,
+    matchers: [
+        {
+        address: string,
+        matcherID: string
+        }
+    ]
+}
+```
+---
+## **/port-open/**
+For a client to send the port that the client currently has open and the ID of the intended opponent to the server.
+Only triggered if the server has instructed the client that a match has been made and that they should host a session.
+**Method: POST**
+
+### Request body contains:
+```
+{
+    port: string,
+    ipAddress: string,
+    clientMatcherID: string
+}
+```
+### Response options:
+```
+{
+    status: 200
+}
+```
+
+---
+
+# Classes/Services
 
 ### MATCHER Object:
-ID - String
-IP Address - String
-Bad Match IDs - Arr of Strings
-Time entered queue - Date object
-deleteSelf: function that passes in ID to instruct MATCHMAKER to delete this MATCHER
-
-ASSIGN USERS A TOKEN
-
-MATCHMAKER class service will have a state object
-- sub objects in this state will have keys of Tokens and values of Matcher Objects
-
+```
+ID: {
+    matcherId: string,
+    address: string,
+    port: string,
+    badMatchIds: arr of strings,
+    timeCreated: Date,
+    deleteSelf: callback function(matcherId),
+    isMatchedWith: String (other matcher ID)
+}
+```
 
 How to handle users that sit in queue and don't check in:
 - After some time, user object will fire off a callback to the MATCHMAKER with it's own ID to delete itself
 
+Check on server needs to happen every time an API request comes in to see if client already has been selected for a match by another client.
 
 
 Notes/Changes to existing CCCaster:
