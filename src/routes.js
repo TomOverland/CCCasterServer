@@ -19,6 +19,22 @@ class RoutesController {
       }),
       this.matchmaker.handleJoinQueue
     );
+    this.router.post(
+      '/get-matcher-address/',
+      bodyParser.json({
+        limit: '1024kb',
+        type: 'application/json',
+      }),
+      this.matchmaker.handleGetMatchers
+    );
+    this.router.post(
+      '/ping-result/',
+      bodyParser.json({
+        limit: '1024kb',
+        type: 'application/json',
+      }),
+      this.matchmaker.handlePingResult
+    );
   }
 }
 
