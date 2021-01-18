@@ -88,16 +88,13 @@ The shouldStartMatch KVP in a response object indicates that there is a host wit
 
 ```
 {
-    status: 200,
-    body: {
-        clientMatcherID: string,
-        matchers: [
-            {
-            matcherID: string,
-            address: string
-            }
-        ]
-    }
+    clientMatcherID: string,
+    matchers: [
+        {
+        matcherID: string,
+        address: string
+        }
+    ]
 }
 ```
 
@@ -135,7 +132,6 @@ The shouldStartMatch KVP in a response object indicates that there is a host wit
 
 ```
 {
-    status: 200,
     shouldStartMatch: bool,
     matchAddress: string,
     matchPort: string,
@@ -184,7 +180,6 @@ The shouldStartMatch KVP in a response object indicates that there is a host wit
 
 ```
 {
-    status: 200,
     shouldStartMatch: bool,
     matcherAddress: string,
     matchers: [
