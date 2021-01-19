@@ -1,7 +1,15 @@
+const Matcher = require("./matcher");
+
 class Matchmaker {
+
+  constructor() {
+    this.deleteSelf;
+  }
   init() {}
 
   handleJoinQueue(req, res) {
+    const dummyMatcher = new Matcher('2038u4108', '192.168.0.1', this.deleteSelf)
+    dummyMatcher.deleteSelf(dummyMatcher.matcherId)
     const respObj = {
       clientMatcherID: '12345',
     };
@@ -41,6 +49,10 @@ class Matchmaker {
       // Empty obj for now, will need to fill in KVP with more info
     };
     res.json(respObj);
+  }
+  
+  deleteSelf(matcherId) {
+    console.log('MATCHMAKER DELETED MATCHER ', matcherId);
   }
 }
 
