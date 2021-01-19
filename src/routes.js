@@ -2,6 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 class RoutesController {
+  constructor() {
+    this.matchmaker;
+  }
+
   init(matchmaker) {
     this.matchmaker = matchmaker;
     this.router = new express.Router();
@@ -17,7 +21,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handleJoinQueue
+      this.matchmaker.handleJoinQueue.bind(this.matchmaker)
     );
     this.router.post(
       '/get-matcher-address/',
@@ -25,7 +29,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handleGetMatchers
+      this.matchmaker.handleGetMatchers.bind(this.matchmaker)
     );
     this.router.post(
       '/ping-result/',
@@ -33,7 +37,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handlePingResult
+      this.matchmaker.handlePingResult.bind(this.matchmaker)
     );
   }
 }

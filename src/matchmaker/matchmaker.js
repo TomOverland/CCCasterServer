@@ -1,19 +1,31 @@
-const Matcher = require("./matcher");
+const Ids = require('ids');
+const idMaker = new Ids();
+
+const Matcher = require('./matcher');
 
 class Matchmaker {
-
   constructor() {
-    this.deleteSelf;
+    this.queue = {};
   }
-  init() {}
+  createMatcherId() {
+    return idMaker.next();
+  }
 
   handleJoinQueue(req, res) {
-    const dummyMatcher = new Matcher('2038u4108', '192.168.0.1', this.deleteSelf)
-    dummyMatcher.deleteSelf(dummyMatcher.matcherId)
+    // TODO - check if IP already in a queue
+    const matcherId = this.createMatcherId();
+    const newMatcher = new Matcher(matcherId, req.ip, this.deleteMatcher);
+    this.queue.matcherID = newMatcher;
+
     const respObj = {
-      clientMatcherID: '12345',
+      clientMatcherID: newMatcher.matcherId,
     };
+
     res.json(respObj);
+  }
+
+  deleteMatcher(matcherId) {
+    console.log('DELETE MATCHER', matcherId);
   }
 
   handleGetMatchers(req, res) {
