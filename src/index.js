@@ -1,3 +1,4 @@
+'use strict';
 const express = require('express');
 const Matchmaker = require('./matchmaker/matchmaker');
 const RoutesController = require('./routes');

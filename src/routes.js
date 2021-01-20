@@ -2,6 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 class RoutesController {
+  constructor() {
+    this.matchmaker;
+  }
+
   init(matchmaker) {
     this.matchmaker = matchmaker;
     this.router = new express.Router();
