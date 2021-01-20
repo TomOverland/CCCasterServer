@@ -6,10 +6,21 @@ const geolocationIps = require('../common/constants/constants');
 
 class Matchmaker {
   constructor() {
-    this.queue = {};
+    this.queue = {
+      notLocated: {},
+      NW: {}, // North America West
+      NE: {}, // North America East
+      SA: {}, // Sourth America
+      EU: {}, // Europe
+      ME: {}, // Middle East (Israel)
+      JP: {}, // Japan
+      AU: {}, // Australia
+    };
+    this.queue;
     this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handleGetMatchers = this.handleGetMatchers.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
+    this.deleteMatcher = this.deleteMatcher.bind(this);
   }
   createMatcherId() {
     return idMaker.next();
@@ -19,10 +30,11 @@ class Matchmaker {
     // TODO - check if IP already in a queue
     const matcherId = this.createMatcherId();
     const newMatcher = new Matcher(matcherId, req.ip, this.deleteMatcher);
-    this.queue.matcherID = newMatcher;
+    this.queue.notLocated.matcherID = newMatcher;
 
     const respObj = {
       clientMatcherID: newMatcher.matcherId,
+      matchers: geolocationIps.geolocationIps,
     };
 
     res.json(respObj);
@@ -65,10 +77,6 @@ class Matchmaker {
       // Empty obj for now, will need to fill in KVP with more info
     };
     res.json(respObj);
-  }
-
-  deleteSelf(matcherId) {
-    console.log('MATCHMAKER DELETED MATCHER ', matcherId);
   }
 }
 
