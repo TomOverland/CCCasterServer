@@ -21,7 +21,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handleJoinQueue.bind(this.matchmaker)
+      this.matchmaker.handleJoinQueue
     );
     this.router.post(
       '/get-matcher-address/',
@@ -29,7 +29,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handleGetMatchers.bind(this.matchmaker)
+      this.matchmaker.handleGetMatchers
     );
     this.router.post(
       '/ping-result/',
@@ -37,7 +37,7 @@ class RoutesController {
         limit: '1024kb',
         type: 'application/json',
       }),
-      this.matchmaker.handlePingResult.bind(this.matchmaker)
+      this.matchmaker.handlePingResult
     );
   }
 }

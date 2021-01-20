@@ -6,6 +6,9 @@ const Matcher = require('./matcher');
 class Matchmaker {
   constructor() {
     this.queue = {};
+    this.handleJoinQueue = this.handleJoinQueue.bind(this);
+    this.handleGetMatchers = this.handleGetMatchers.bind(this);
+    this.handlePingResult = this.handlePingResult.bind(this);
   }
   createMatcherId() {
     return idMaker.next();
