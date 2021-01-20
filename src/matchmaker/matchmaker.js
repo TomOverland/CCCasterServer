@@ -2,6 +2,7 @@ const Ids = require('ids');
 const idMaker = new Ids();
 
 const Matcher = require('./matcher');
+const geolocationIps = require('../common/constants/constants');
 
 class Matchmaker {
   constructor() {
@@ -65,7 +66,7 @@ class Matchmaker {
     };
     res.json(respObj);
   }
-  
+
   deleteSelf(matcherId) {
     console.log('MATCHMAKER DELETED MATCHER ', matcherId);
   }
