@@ -74,7 +74,14 @@ class Matchmaker {
 
   handlePortOpen(req, res) {
     const respObj = {
-      // Empty obj for now, will need to fill in KVP with more info
+      portOpen: true,
+    };
+    res.json(respObj);
+  }
+
+  hasMatch(req, res) {
+    const respObj = {
+      availableMatchers: [],
     };
     res.json(respObj);
   }
