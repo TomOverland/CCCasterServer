@@ -30,7 +30,7 @@ class Matchmaker {
     // TODO - check if IP already in a queue
     const matcherId = this.createMatcherId();
     const newMatcher = new Matcher(matcherId, req.ip, this.deleteMatcher);
-    this.queue.matcherID = newMatcher;
+    this.queue.notLocated.matcherID = newMatcher;
 
     const respObj = {
       clientMatcherID: newMatcher.matcherId,
