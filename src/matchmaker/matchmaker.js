@@ -44,6 +44,13 @@ class Matchmaker {
     res.json(respObj);
   }
 
+  handlePortOpen(req, res) {
+    const respObj = {
+      // Empty obj for now, will need to fill in KVP with more info
+    };
+    res.json(respObj);
+  }
+  
   deleteSelf(matcherId) {
     console.log('MATCHMAKER DELETED MATCHER ', matcherId);
   }

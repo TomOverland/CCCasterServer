@@ -35,6 +35,14 @@ class RoutesController {
       }),
       this.matchmaker.handlePingResult
     );
+    this.router.post(
+      '/port-open/',
+      bodyParser.json({
+        limit: '1024kb',
+        type: 'application/json',
+      }),
+      this.matchmaker.handlePortOpen
+    );
   }
 }
 
