@@ -83,26 +83,26 @@ class Matchmaker {
 
   isMatchedWith(clientMatcherID, res) {
     // mock opponent values
-    const mockOpponent = {
-      matcherID: 'matcherID',
-      address: 'opponentAddress',
-      port: '1.2.3.4',
-      badMatchIDs: [],
-      timeCreated: '12:00',
-      isMatchedWith: 'NW-123456',
-    };
-    this.queue.NW['NW-654321'] = mockOpponent;
+    // const mockOpponent = {
+    //   matcherID: 'matcherID',
+    //   address: 'opponentAddress',
+    //   port: '1.2.3.4',
+    //   badMatchIDs: [],
+    //   timeCreated: '12:00',
+    //   isMatchedWith: 'NW-123456',
+    // };
+    // this.queue.NW['NW-654321'] = mockOpponent;
 
     // mock user values
-    const mockUser = {
-      matcherID: 'matcherID',
-      address: 'address',
-      port: '1.2.3.4',
-      badMatchIDs: [],
-      timeCreated: '12:00',
-      isMatchedWith: 'NW-654321',
-    };
-    this.queue.NW['NW-123456'] = mockUser;
+    // const mockUser = {
+    //   matcherID: 'matcherID',
+    //   address: 'address',
+    //   port: '1.2.3.4',
+    //   badMatchIDs: [],
+    //   timeCreated: '12:00',
+    //   isMatchedWith: 'NW-654321',
+    // };
+    // this.queue.NW['NW-123456'] = mockUser;
 
     // Make API call to handlePingResult with client matcher ID = NW-123456
 
