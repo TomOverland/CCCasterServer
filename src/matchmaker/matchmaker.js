@@ -107,12 +107,10 @@ class Matchmaker {
     // Make API call to handlePingResult with client matcher ID = NW-123456
 
     // get region queue (first 2 chars of client matcherID)
-    const regionQueueArray = clientMatcherID.split('', 2);
-    // returns an array: ['N', 'W']
+    const regionQueueArray = clientMatcherID.split('', 2); // returns an array: ['N', 'W']
     const regionQueue = regionQueueArray[0] + regionQueueArray[1];
     // console.log('Region Queue: ', regionQueue);
     // how to tell if player has been claimed as a matcher
-    // console.log('queue object: ', this.queue);
     const opponentMatcherID = this.queue[regionQueue][clientMatcherID]
       .isMatchedWith;
     // console.log('opponentMatcherID: ', opponentMatcherID);
@@ -125,12 +123,9 @@ class Matchmaker {
       return;
     }
 
-    // response object
     const respObj = {
       shouldStartMatch: true,
-      // dummy matchAddress
       matchAddress: opponentMatcherAddress,
-      // dummy matchPort
       matchPort: opponentMatcherPort,
     };
 
