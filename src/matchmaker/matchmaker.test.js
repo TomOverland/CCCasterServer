@@ -1,7 +1,7 @@
 const Matchmaker = require('./matchmaker');
 
 describe('Matchmaker test suite', () => {
-  it('should set a Matcher into the queue, and return a response with the Matchers Id', () => {
+  it('should set a Matcher into the queue, and return a response with the Matchers ID', () => {
     const matchmaker = new Matchmaker();
     const mockReq = {
       ip: '1.2.3.4',
@@ -16,26 +16,26 @@ describe('Matchmaker test suite', () => {
   });
   it('should find a match if an opponent is available', () => {
     const expectedResult = {
-      matchAddress: '192.168.1.1:12345',
+      matchAddress: 'opponentAddress',
       matchPort: '1.2.3.4',
       shouldStartMatch: true,
     };
 
     const matchmaker = new Matchmaker();
     const mockOpponent = {
-      matcherId: 'matcherId',
-      address: 'address',
+      matcherID: 'matcherID',
+      address: 'opponentAddress',
       port: '1.2.3.4',
-      badMatchIds: [],
+      badMatchIDs: [],
       timeCreated: '12:00',
       isMatchedWith: 'NW-123456',
     };
 
     const mockUser = {
-      matcherId: 'matcherId',
+      matcherID: 'matcherID',
       address: 'address',
       port: '1.2.3.4',
-      badMatchIds: [],
+      badMatchIDs: [],
       timeCreated: '12:00',
       isMatchedWith: 'NW-654321',
     };
