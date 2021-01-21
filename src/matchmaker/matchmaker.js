@@ -112,15 +112,15 @@ class Matchmaker {
     const regionQueue = regionQueueArray[0] + regionQueueArray[1];
     // console.log('Region Queue: ', regionQueue);
     // how to tell if player has been claimed as a matcher
-    console.log('queue object: ', this.queue);
+    // console.log('queue object: ', this.queue);
     const opponentMatcherID = this.queue[regionQueue][clientMatcherID]
       .isMatchedWith;
-    console.log('opponentMatcherID: ', opponentMatcherID);
+    // console.log('opponentMatcherID: ', opponentMatcherID);
     const opponentMatcherAddress = this.queue[regionQueue][opponentMatcherID]
       .address;
-    console.log('opponentMatcherAddress: ', opponentMatcherAddress);
+    // console.log('opponentMatcherAddress: ', opponentMatcherAddress);
     const opponentMatcherPort = this.queue[regionQueue][opponentMatcherID].port;
-    console.log('opponentMatcherPort: ', opponentMatcherPort);
+    // console.log('opponentMatcherPort: ', opponentMatcherPort);
     if (typeof opponentMatcherID === 'undefined') {
       return;
     }
