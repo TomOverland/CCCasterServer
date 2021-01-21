@@ -65,6 +65,7 @@ class Matchmaker {
   }
 
   handlePingResult(req, res) {
+    this.isMatchedWith(req.clientMatcherID, res);
     const respObj = {
       shouldStartMatch: true,
       matcherAddress: '192.168.1.1:12345',
@@ -74,8 +75,57 @@ class Matchmaker {
 
   handlePortOpen(req, res) {
     const respObj = {
-      // Empty obj for now, will need to fill in KVP with more info
+      // if port status is "true", it is open.
+      portStatus: true,
     };
+    res.json(respObj);
+  }
+
+  isMatchedWith(clientMatcherID, res) {
+    // mock opponent values
+    const mockOpponent = {
+      matcherId: 'matcherId',
+      address: 'address',
+      port: '1.2.3.4',
+      badMatchIds: [],
+      timeCreated: '12:00',
+      isMatchedWith: 'NW-123456',
+    };
+    this.queue.NW['NW-654321'] = mockOpponent;
+
+    // mock user values
+    const mockUser = {
+      matcherId: 'matcherId',
+      address: 'address',
+      port: '1.2.3.4',
+      badMatchIds: [],
+      timeCreated: '12:00',
+      isMatchedWith: 'NW-654321',
+    };
+    this.queue.NW['NW-123456'] = mockUser;
+
+    // Make API call to handlePingResult with client matcher ID = NW-123456
+
+    // get region queue (first 2 chars of client matcherID)
+    const regionQueue = clientMatcherID.split('', 2);
+    const mockRegionQueue = 'NW';
+    console.log('Region Queue: ', regionQueue);
+    // how to tell if player has been claimed as a matcher
+    const opponentMatcherID = this.queue[mockRegionQueue][clientMatcherID]
+      .isMatchedWith;
+    if (typeof opponentMatcherID === 'undefined') {
+      return;
+    }
+
+    // response object
+    const respObj = {
+      shouldStartMatch: true,
+      // dummy matchAddress
+      matchAddress: '192.168.1.1:12345',
+      // dummy matchPort
+      matchPort: '1.2.3.4',
+    };
+
     res.json(respObj);
   }
 }
