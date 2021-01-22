@@ -1,5 +1,5 @@
-const IDs = require('ids');
-const IDMaker = new IDs();
+const Ids = require('ids');
+const IdMaker = new Ids();
 
 const Matcher = require('./matcher');
 const geolocationIps = require('../common/constants/constants');
@@ -23,7 +23,7 @@ class Matchmaker {
     this.deleteMatcher = this.deleteMatcher.bind(this);
   }
   createMatcherID() {
-    return IDMaker.next();
+    return IdMaker.next();
   }
 
   handleJoinQueue(req, res) {
