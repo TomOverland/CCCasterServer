@@ -22,6 +22,7 @@ class Matchmaker {
     this.handleGetMatchers = this.handleGetMatchers.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
     this.deleteMatcher = this.deleteMatcher.bind(this);
+    this.handleDumpQueue = this.handleDumpQueue.bind(this);
   }
   createMatcherID() {
     return idMaker.next();
@@ -84,6 +85,11 @@ class Matchmaker {
     res.json(respObj);
   }
 
+  handleDumpQueue(req, res) {
+    // check req.headers for the presence of the Auth header
+    // if Auth header is not present, res.status(403)
+    res.json(this.queue);
+  }
   handleGeolocationResponse(req) {
     const closestRegionCode = this.findClosestRegion(req.body.matchers);
     const newMatcherID = `${closestRegionCode}-${req.body.clientMatcherID}`;
@@ -120,6 +126,7 @@ class Matchmaker {
 
   updateCheckin() {
     // checkin logic
+
   }
 }
 

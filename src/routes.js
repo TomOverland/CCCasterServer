@@ -47,6 +47,10 @@ class RoutesController {
       }),
       this.matchmaker.handlePortOpen
     );
+    this.router.get(
+      '/dump-queues/',
+      this.matchmaker.handleDumpQueue
+    )
   }
 }
 
