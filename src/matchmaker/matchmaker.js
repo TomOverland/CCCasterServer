@@ -21,6 +21,7 @@ class Matchmaker {
     this.handleGetMatchers = this.handleGetMatchers.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
     this.deleteMatcher = this.deleteMatcher.bind(this);
+    this.handleDumpQueue = this.handleDumpQueue.bind(this);
   }
   createMatcherId() {
     return idMaker.next();
@@ -77,6 +78,12 @@ class Matchmaker {
       // Empty obj for now, will need to fill in KVP with more info
     };
     res.json(respObj);
+  }
+
+  handleDumpQueue(req, res) {
+    // check req.headers for the presence of the Auth header
+    // if Auth header is not present, res.status(403)
+    res.json(this.queue);
   }
 }
 
