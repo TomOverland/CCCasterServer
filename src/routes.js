@@ -6,23 +6,16 @@ class RoutesController {
     this.matchmaker;
   }
 
-  init(matchmaker) {
+  init(matchmaker, wss) {
     this.matchmaker = matchmaker;
     this.router = new express.Router();
+    this.wss = wss;
     this.proxyRoutes();
     console.log('router init complete', this.matchmaker);
     return this.router;
   }
 
   proxyRoutes() {
-    this.router.post(
-      '/join-matchmaking-queue/',
-      bodyParser.json({
-        limit: '1024kb',
-        type: 'application/json',
-      }),
-      this.matchmaker.handleJoinQueue
-    );
     this.router.post(
       '/get-matcher-address/',
       bodyParser.json({
@@ -32,14 +25,6 @@ class RoutesController {
       this.matchmaker.handleGetMatchers
     );
     this.router.post(
-      '/ping-result/',
-      bodyParser.json({
-        limit: '1024kb',
-        type: 'application/json',
-      }),
-      this.matchmaker.handlePingResult
-    );
-    this.router.post(
       '/port-open/',
       bodyParser.json({
         limit: '1024kb',
@@ -47,10 +32,28 @@ class RoutesController {
       }),
       this.matchmaker.handlePortOpen
     );
-    this.router.get(
-      '/dump-queues/',
-      this.matchmaker.handleDumpQueue
-    )
+    this.router.get('/dump-queues/', this.matchmaker.handleDumpQueue);
+
+    this.wss.on('connection', (ws) => {
+      this.matchmaker.handleJoinQueue(ws);
+      ws.on('message', (message) => {
+        const parsedMessage = JSON.parse(JSON.parse(message));
+        console.log(parsedMessage);
+        switch (parsedMessage.eventType) {
+          case 'pingTestResponse':
+            console.log('is ping test');
+            this.matchmaker.handlePingResult(ws, parsedMessage);
+            break;
+          case 'sendOpenPort':
+            const respObj = {
+              eventType: 'openPort',
+            };
+            ws.send(JSON.stringify(respObj));
+            break;
+          // case ''
+        }
+      });
+    });
   }
 }
 
