@@ -1,3 +1,6 @@
+#config
+/src/common/constants/dev-config.js
+
 # Logs
 logs
 *.log
