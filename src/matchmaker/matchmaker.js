@@ -1,8 +1,9 @@
 const Ids = require('ids');
 const idMaker = new Ids();
+const _ = require('lodash');
 
 const Matcher = require('./matcher');
-const geolocationIps = require('../common/constants/constants');
+const constants = require('../common/constants/constants');
 
 class Matchmaker {
   constructor() {
@@ -23,29 +24,26 @@ class Matchmaker {
     this.deleteMatcher = this.deleteMatcher.bind(this);
     this.handleDumpQueue = this.handleDumpQueue.bind(this);
   }
-  createMatcherId() {
+  createMatcherID() {
     return idMaker.next();
   }
 
   handleJoinQueue(req, res) {
     // TODO - check if IP already in a queue
-    const matcherId = this.createMatcherId();
-    const newMatcher = new Matcher(matcherId, req.ip, this.deleteMatcher);
-    this.queue.notLocated.matcherID = newMatcher;
+    const matcherID = this.createMatcherID();
+    const newMatcher = new Matcher(matcherID, req.ip, this.deleteMatcher);
+    this.queue.notLocated[matcherID] = newMatcher;
 
     const respObj = {
-      clientMatcherID: newMatcher.matcherId,
-      matchers: geolocationIps.geolocationIps,
+      clientMatcherID: newMatcher.matcherID,
+      matchers: constants.geolocationIps,
     };
 
     res.json(respObj);
   }
 
-  deleteMatcher(matcherId) {
-    console.log('DELETE MATCHER', matcherId);
-  }
-
   handleGetMatchers(req, res) {
+    // Has Match goes here
     const respObj = {
       matchers: [
         {
@@ -66,6 +64,13 @@ class Matchmaker {
   }
 
   handlePingResult(req, res) {
+    if (this.isGeolocationResponse(req)) {
+      console.log('is geolocation response');
+      this.handleGeolocationResponse(req);
+    } else {
+      // Has Match work goes here
+      // Ping Comparison Function work goes here
+    }
     const respObj = {
       shouldStartMatch: true,
       matcherAddress: '192.168.1.1:12345',
@@ -84,6 +89,44 @@ class Matchmaker {
     // check req.headers for the presence of the Auth header
     // if Auth header is not present, res.status(403)
     res.json(this.queue);
+  }
+  handleGeolocationResponse(req) {
+    const closestRegionCode = this.findClosestRegion(req.body.matchers);
+    const newMatcherID = `${closestRegionCode}-${req.body.clientMatcherID}`;
+    const clientMatcher = _.clone(this.queue.notLocated[req.body.clientMatcherID]);
+    clientMatcher.matcherID = newMatcherID;
+    delete this.queue.notLocated[req.body.clientMatcherID];
+    this.queue[closestRegionCode][newMatcherID] = clientMatcher;
+  }
+
+  isGeolocationResponse(req) {
+    return Object.values(req.body.matchers[0]).includes('NorthAmericaWest');
+  }
+
+  findClosestRegion(regionPings) {
+    let indexOfLowestPing = 0;
+    let lowestPing = 1000;
+    regionPings.forEach((pingResult) => {
+      if (pingResult.pingResult < lowestPing) {
+        lowestPing = pingResult.pingResult;
+        indexOfLowestPing = regionPings.indexOf(pingResult);
+      }
+    });
+    return constants.regionCodes[regionPings[indexOfLowestPing].matcherID];
+  }
+
+  selectMatchers(clientMatcherID, res) {
+    // should return an array of three matchers to test
+    // selected matchers should not be in the clientMatcher's badMatchIds arr
+  }
+
+  deleteMatcher(matcherID) {
+    console.log('DELETE MATCHER', matcherID);
+  }
+
+  updateCheckin() {
+    // checkin logic
+
   }
 }
 

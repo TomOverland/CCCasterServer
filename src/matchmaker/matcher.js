@@ -1,9 +1,9 @@
 class Matcher {
-  constructor(matcherId, address, deleteSelf) {
-    this.matcherId = matcherId;
+  constructor(matcherID, address, deleteSelf) {
+    this.matcherID = matcherID;
     this.address = address;
     this.port;
-    this.badMatchIds = [];
+    this.badMatchIDs = [];
     this.timeCreated = new Date();
     this.isMatchedWith;
     this.deleteSelf = deleteSelf;
