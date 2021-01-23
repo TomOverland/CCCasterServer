@@ -46,7 +46,7 @@ class Matchmaker {
       console.log('is geolocation response');
       this.handleGeolocationResponse(parsedMessage, ws);
     } else {
-      const opponent = this.queue[regionQueue][clientMatcherID].isMatchedWith;
+      const opponent = this.queue[ws.regionQueue][ws.matcherID].isMatchedWith;
       if (opponent) {
         console.log('IN HANDLE PING RESULT - PLAYER HAS BEEN CLAIMED');
         console.log('TERMINATING');
