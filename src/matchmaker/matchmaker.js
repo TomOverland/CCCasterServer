@@ -116,6 +116,10 @@ class Matchmaker {
 
   sendOpenPort(host) {
     console.log('SEND OPEN PORT', host.matcherID);
+    const message = {
+      eventType: 'openPort',
+    };
+    host.send(JSON.stringify(message));
   }
 
   selectPlayerToTest(host) {
