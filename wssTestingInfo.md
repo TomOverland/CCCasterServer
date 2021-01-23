@@ -35,7 +35,7 @@ No body/message is needed for this. Just start the connection and the geolocatio
 Stringified JSON message for geolocation ping test result:
 
 ```
-"{\"eventType\":\"{{pingTestResponse}}\",\"matchers\":[{\"matcherID\":\"NorthAmericaWest\",\"pingResult\":100},{\"matcherID\":\"NorthAmericaEast\",\"pingResult\":120},{\"matcherID\":\"Australia\",\"pingResult\":130}]}"
+"{\"eventType\":\"pingTestResponse\",\"matchers\":[{\"matcherID\":\"NorthAmericaWest\",\"pingResult\":100},{\"matcherID\":\"NorthAmericaEast\",\"pingResult\":120},{\"matcherID\":\"Australia\",\"pingResult\":130}]}"
 ```
 
 To use the above, cahnge whichever region you want to be sorted into to the lowest ping number.
@@ -43,15 +43,7 @@ To use the above, cahnge whichever region you want to be sorted into to the lowe
 Stringified JSON message for normal ping test result:
 
 ```
-{
-    "eventType": "{{pingTestResult}}",
-    "matchers": [
-        {
-            "matcherID": "{{MatcherID}}",
-            "pingResult": 100
-        }
-    ]
-}
+"{\"eventType\":\"pingTestResult\",\"matchers\":[{\"matcherID\":\"MatcherID\",\"pingResult\":100}]}"
 ```
 
 To use this, connect at least 2 WS connections, run the /dump-queues/ route in Postman, then paste a matcherID that is not assigned to the WS connection you're using into the matcherID.
