@@ -44,7 +44,7 @@ class Matchmaker {
     if (this.isGeolocationResponse(parsedMessage)) {
       console.log('is geolocation response');
       this.handleGeolocationResponse(parsedMessage, ws);
-      selectPlayerToTest(ws);
+      this.selectPlayerToTest(ws);
     } else {
       const opponent = this.queue[ws.regionQueue][ws.matcherID].isMatchedWith;
       if (opponent) {
