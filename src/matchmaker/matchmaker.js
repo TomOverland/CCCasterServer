@@ -29,7 +29,8 @@ class Matchmaker {
   handleJoinQueue(ws) {
     const matcherID = this.createMatcherID();
     ws.matcherID = matcherID;
-    // this.queue.notLocated[matcherID] = ws;
+    ws.badMatchers = [];
+    ws.isMatchedWith = undefined;
 
     console.log(`NEW MATCHER - matcherID is ${ws.matcherID}`);
     const respObj = {
