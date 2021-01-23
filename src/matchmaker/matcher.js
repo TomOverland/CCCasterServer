@@ -1,12 +1,15 @@
 class Matcher {
-  constructor(matcherId, address, deleteSelf) {
-    this.matcherId = matcherId;
-    this.address = address;
-    this.port;
-    this.badMatchIds = [];
-    this.timeCreated = new Date();
+  constructor(matcherID, ws) {
+    this.matcherID = matcherID;
+    this.ws = ws;
+    this.openPort;
+    this.isConnected = true;
+    this.badMatchIDs = [];
     this.isMatchedWith;
-    this.deleteSelf = deleteSelf;
+  }
+
+  getIpAddress() {
+    return this.ws._socket.remoteAddress();
   }
 }
 
