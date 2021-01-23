@@ -83,8 +83,24 @@ class Matchmaker {
 
   handlePortOpen(req, res) {
     const respObj = {
-      // Empty obj for now, will need to fill in KVP with more info
+      // if port status is "true", it is open.
+      portStatus: true,
     };
+    res.json(respObj);
+  }
+
+  isMatchedWith(clientMatcherID, res) {
+    const regionQueue = clientMatcherID.substring(0, 2);
+    const opponentMatcherID = this.queue[regionQueue][clientMatcherID].isMatchedWith;
+    if (typeof opponentMatcherID === 'undefined') {
+      return;
+    }
+    const respObj = {
+      shouldStartMatch: true,
+      matchAddress: this.queue[regionQueue][opponentMatcherID].address,
+      matchPort: this.queue[regionQueue][opponentMatcherID].port,
+    };
+
     res.json(respObj);
   }
 
