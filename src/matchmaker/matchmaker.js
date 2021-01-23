@@ -53,7 +53,7 @@ class Matchmaker {
         return; // player has been marked by opponent - that thread will start the match
       }
       // Ping Comparison Function work goes here
-      evaluateOpponentPingResult(parsedMessage, ws);
+      this.evaluateOpponentPingResult(parsedMessage, ws);
     }
 
     // const respObj = {
