@@ -1,6 +1,6 @@
 const Ids = require('ids');
 const idMaker = new Ids();
-const auth = require('../common/constants/dev-config');
+// const auth = require('../common/constants/dev-config');
 const _ = require('lodash');
 const constants = require('../common/constants/constants');
 
@@ -81,12 +81,12 @@ class Matchmaker {
   }
 
   handleDumpQueue(req, res) {
-    if (req.headers.devclientid === auth.devClientID) {
-      return res.json(this.queue);
-    } else {
-      res.status(403);
-      res.json('Error: Forbidden');
-    }
+    // if (req.headers.devclientid === auth.devClientID) {
+    return res.json(this.queue);
+    // } else {
+    // res.status(403);
+    // res.json('Error: Forbidden');
+    // }
   }
 
   handleGeolocationResponse(parsedMessage, ws) {
