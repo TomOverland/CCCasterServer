@@ -1,8 +1,9 @@
 const Ids = require('ids');
-const IdMaker = new Ids();
+const idMaker = new Ids();
+const _ = require('lodash');
 
 const Matcher = require('./matcher');
-const geolocationIps = require('../common/constants/constants');
+const constants = require('../common/constants/constants');
 
 class Matchmaker {
   constructor() {
@@ -17,34 +18,34 @@ class Matchmaker {
       AU: {}, // Australia
     };
     this.queue;
+    this.maxPing = 126;
+    // this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handleGetMatchers = this.handleGetMatchers.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
     this.deleteMatcher = this.deleteMatcher.bind(this);
+    this.handleDumpQueue = this.handleDumpQueue.bind(this);
   }
   createMatcherID() {
-    return IdMaker.next();
+    return idMaker.next();
   }
 
-  handleJoinQueue(req, res) {
+  handleJoinQueue(ws) {
     // TODO - check if IP already in a queue
     const matcherID = this.createMatcherID();
-    const newMatcher = new Matcher(matcherID, req.ip, this.deleteMatcher);
-    this.queue.notLocated.matcherID = newMatcher;
+    ws.matcherID = matcherID;
+    this.queue.notLocated[matcherID] = ws;
 
+    console.log(`matcherID is ${ws.matcherID}`);
     const respObj = {
-      clientMatcherID: newMatcher.matcherID,
-      matchers: geolocationIps.geolocationIps,
+      eventType: 'pingTest',
+      matchers: constants.geolocationIps,
     };
-
-    res.json(respObj);
-  }
-
-  deleteMatcher(matcherID) {
-    console.log('DELETE MATCHER', matcherID);
+    ws.send(JSON.stringify(respObj));
   }
 
   handleGetMatchers(req, res) {
+    // Has Match goes here
     const respObj = {
       matchers: [
         {
@@ -64,13 +65,22 @@ class Matchmaker {
     res.json(respObj);
   }
 
-  handlePingResult(req, res) {
-    this.isMatchedWith(req.clientMatcherID, res);
+  handlePingResult(ws, parsedMessage) {
+    // console.log('in handle ping result');
+    // if (this.isGeolocationResponse(parsedMessage)) {
+    //   console.log('is geolocation response');
+    //   this.handleGeolocationResponse(parsedMessage, ws);
+    // } else {
+    // Has Match work goes here
+    // Ping Comparison Function work goes here
+    // }
     const respObj = {
-      shouldStartMatch: true,
-      matcherAddress: '192.168.1.1:12345',
+      eventType: 'joinMatch',
+      matcherAddress: '192.168.1.1',
+      matcherPort: '12345',
     };
-    res.json(respObj);
+    // res.json(this.queue);
+    ws.send(JSON.stringify(respObj));
   }
 
   handlePortOpen(req, res) {
@@ -82,55 +92,79 @@ class Matchmaker {
   }
 
   isMatchedWith(clientMatcherID, res) {
-    // mock opponent values
-    // const mockOpponent = {
-    //   matcherID: 'matcherID',
-    //   address: 'opponentAddress',
-    //   port: '1.2.3.4',
-    //   badMatchIDs: [],
-    //   timeCreated: '12:00',
-    //   isMatchedWith: 'NW-123456',
-    // };
-    // this.queue.NW['NW-654321'] = mockOpponent;
-
-    // mock user values
-    // const mockUser = {
-    //   matcherID: 'matcherID',
-    //   address: 'address',
-    //   port: '1.2.3.4',
-    //   badMatchIDs: [],
-    //   timeCreated: '12:00',
-    //   isMatchedWith: 'NW-654321',
-    // };
-    // this.queue.NW['NW-123456'] = mockUser;
-
-    // Make API call to handlePingResult with client matcher ID = NW-123456
-
-    // get region queue (first 2 chars of client matcherID)
-    const regionQueueArray = clientMatcherID.split('', 2); // returns an array: ['N', 'W']
-    const regionQueue = regionQueueArray[0] + regionQueueArray[1];
-    // console.log('Region Queue: ', regionQueue);
-    // how to tell if player has been claimed as a matcher
-    const opponentMatcherID = this.queue[regionQueue][clientMatcherID]
-      .isMatchedWith;
-    // console.log('opponentMatcherID: ', opponentMatcherID);
-    const opponentMatcherAddress = this.queue[regionQueue][opponentMatcherID]
-      .address;
-    // console.log('opponentMatcherAddress: ', opponentMatcherAddress);
-    const opponentMatcherPort = this.queue[regionQueue][opponentMatcherID].port;
-    // console.log('opponentMatcherPort: ', opponentMatcherPort);
+    const regionQueue = clientMatcherID.substring(0, 2);
+    const opponentMatcherID = this.queue[regionQueue][clientMatcherID].isMatchedWith;
     if (typeof opponentMatcherID === 'undefined') {
       return;
     }
-
     const respObj = {
       shouldStartMatch: true,
-      matchAddress: opponentMatcherAddress,
-      matchPort: opponentMatcherPort,
+      matchAddress: this.queue[regionQueue][opponentMatcherID].address,
+      matchPort: this.queue[regionQueue][opponentMatcherID].port,
     };
 
     res.json(respObj);
   }
+
+  handleDumpQueue(req, res) {
+    // check req.headers for the presence of the Auth header
+    // if Auth header is not present, res.status(403)
+    res.json(this.queue);
+  }
+
+  handleGeolocationResponse(parsedMessage, ws) {
+    const closestRegionCode = this.findClosestRegion(parsedMessage.matchers);
+    const newMatcherID = `${closestRegionCode}-${ws.matcherID}`;
+    const clientMatcher = _.clone(this.queue.notLocated[ws.matcherID]);
+    clientMatcher.matcherID = newMatcherID;
+    delete this.queue.notLocated[ws.matcherID];
+    this.queue[closestRegionCode][newMatcherID] = clientMatcher;
+  }
+
+  isGeolocationResponse(message) {
+    console.log('in geolocation response');
+    console.log(message.matchers);
+    return Object.values(message.matchers[0]).includes('NorthAmericaWest');
+  }
+
+  findClosestRegion(regionPings) {
+    let indexOfLowestPing = 0;
+    let lowestPing = 1000;
+    regionPings.forEach((pingResult) => {
+      if (pingResult.pingResult < lowestPing) {
+        lowestPing = pingResult.pingResult;
+        indexOfLowestPing = regionPings.indexOf(pingResult);
+      }
+    });
+    return constants.regionCodes[regionPings[indexOfLowestPing].matcherID];
+  }
+
+  selectMatchers(clientMatcherID, res) {
+    // should return an array of three matchers to test
+    // selected matchers should not be in the clientMatcher's badMatchIds arr
+  }
+
+  deleteMatcher(matcherID) {
+    console.log('DELETE MATCHER', matcherID);
+  }
+
+  updateCheckin() {
+    // checkin logic
+  }
 }
 
 module.exports = Matchmaker;
+
+// handleJoinQueue(req, res) {
+//   // TODO - check if IP already in a queue
+//   const matcherID = this.createMatcherID();
+//   const newMatcher = new Matcher(matcherID, req.ip, this.deleteMatcher);
+//   this.queue.notLocated[matcherID] = newMatcher;
+
+//   const respObj = {
+//     clientMatcherID: newMatcher.matcherID,
+//     matchers: constants.geolocationIps,
+//   };
+
+//   res.json(respObj);
+// }
