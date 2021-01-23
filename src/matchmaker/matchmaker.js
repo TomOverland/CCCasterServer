@@ -46,12 +46,14 @@ class Matchmaker {
       this.handleGeolocationResponse(parsedMessage, ws);
       this.selectPlayerToTest(ws);
     } else {
+      console.log('is not geolocation response');
       const opponent = this.queue[ws.regionCode][ws.matcherID].isMatchedWith;
       if (opponent) {
         console.log('IN HANDLE PING RESULT - PLAYER HAS BEEN CLAIMED');
         console.log('TERMINATING');
         return; // player has been marked by opponent - that thread will start the match
       }
+      console.log('player has not been claimed');
       // Ping Comparison Function work goes here
       this.evaluateOpponentPingResult(parsedMessage, ws);
     }
@@ -116,7 +118,12 @@ class Matchmaker {
 
   evaluateOpponentPingResult(parsedMessage, host) {
     const opponent = this.queue[host.regionCode][parsedMessage.matchers[0].matcherID];
+    console.log('in evaluate ping');
+    console.log(parsedMessage.matchers[0].ping);
+    console.log(host.isMatchedWith);
+    console.log(opponent.isMatchedWith);
     if (parsedMessage.matchers[0].ping <= this.maxPing && !host.isMatchedWith && !opponent.isMatchedWith) {
+      console.log('valid match given ping');
       host.isMatchedWith = opponent;
       opponent.isMatchedWith = host;
       this.sendOpenPort(host);
