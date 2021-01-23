@@ -2,7 +2,6 @@ const Ids = require('ids');
 const idMaker = new Ids();
 const auth = require('../common/constants/dev-config');
 const _ = require('lodash');
-const Matcher = require('./matcher');
 const constants = require('../common/constants/constants');
 
 class Matchmaker {
@@ -53,6 +52,7 @@ class Matchmaker {
         return; // player has been marked by opponent - that thread will start the match
       }
       // Ping Comparison Function work goes here
+      evaluateOpponentPingResult(parsedMessage, ws);
     }
     const respObj = {
       eventType: 'joinMatch',
@@ -76,7 +76,7 @@ class Matchmaker {
       return res.json(this.queue);
     } else {
       res.status(403);
-      res.json('Error: Forbidden')
+      res.json('Error: Forbidden');
     }
   }
 
@@ -103,7 +103,23 @@ class Matchmaker {
     return constants.regionCodes[regionPings[indexOfLowestPing].matcherID];
   }
 
-  selectMatchers(clientMatcherID, res) {
+  evaluateOpponentPingResult(parsedMessage, host) {
+    const opponent = this.queue[host.regionCode][parsedMessage.matchers[0].matcherID];
+    if (parsedMessage.matchers[0].ping <= this.maxPing && !host.isMatchedWith && !opponent.isMatchedWith) {
+      host.isMatchedWith = opponent;
+      opponent.isMatchedWith = host;
+      this.sendOpenPort(host);
+    } else {
+      this.selectPlayerToTest(host);
+    }
+  }
+
+  sendOpenPort(host) {
+    console.log('SEND OPEN PORT', host.matcherID);
+  }
+
+  selectPlayerToTest(host) {
+    console.log('SELECT PLAYER TO TEST', host.matcherID);
     // should return an array of three matchers to test
     // selected matchers should not be in the clientMatcher's badMatchIds arr
   }
