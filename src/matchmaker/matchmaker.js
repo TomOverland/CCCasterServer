@@ -15,11 +15,11 @@ class Matchmaker {
       JP: {}, // Japan
       AU: {}, // Australia
     };
-    this.queue;
     this.maxPing = 126;
     this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
     this.handleDumpQueue = this.handleDumpQueue.bind(this);
+    this.handlePortIsOpen = this.handlePortIsOpen.bind(this);
   }
   createMatcherID() {
     return idMaker.next();
@@ -63,12 +63,21 @@ class Matchmaker {
     ws.send(JSON.stringify(respObj));
   }
 
-  handlePortOpen(req, res) {
-    const respObj = {
-      // if port status is "true", it is open.
-      portStatus: true,
+  // handlePortOpen(req, res) {
+  //   const respObj = {
+  //     // if port status is "true", it is open.
+  //     portStatus: true,
+  //   };
+  //   res.json(respObj);
+  // }
+
+  handlePortIsOpen(host, parsedMessage) {
+    const message = {
+      eventType: 'joinMatch',
+      address: host._socket.remoteAddress,
+      port: parsedMessage.port,
     };
-    res.json(respObj);
+    host.isMatchedWith.send(JSON.stringify(message));
   }
 
   handleDumpQueue(req, res) {
@@ -124,8 +133,38 @@ class Matchmaker {
 
   selectPlayerToTest(host) {
     console.log('SELECT PLAYER TO TEST', host.matcherID);
-    // should return an array of three matchers to test
-    // selected matchers should not be in the clientMatcher's badMatchIds arr
+    const matcherIDs = Object.keys(this.queue[host.regionCode]);
+    let opponent = undefined;
+    let i = 0;
+    while (!opponent && i < matcherIDs.length) {
+      const matcher = this.queue[host.regionCode][matcherIDs[i]];
+      console.log('SELECT PLAYER TO TEST FOR', host.matcherID, matcher.matcherID);
+      if (!host.badMatchers.includes(matcherIDs[i]) && !matcher.isMatchedWith) {
+        console.log('SELECT PLAYER TO TEST - FOUND');
+        opponent = matcher;
+      }
+    }
+    if (!opponent) {
+      console.log('NO OPPONENT FOR', host.matcherID);
+      const message = {
+        eventType: 'noOpponents',
+      };
+      host.send(JSON.stringify(message));
+      setTimeout(() => this.selectPlayerToTest(host), 10000);
+    }
+    if (!host.isMatchedWith) {
+      const message = {
+        eventType: 'pingTest',
+        matchers: [
+          {
+            matcherID: opponent.matcherID,
+            address: opponent._socket.remoteAddress,
+          },
+        ],
+      };
+      console.log('SELECT PLAYER TO TEST - SENDING TO', host.matcherID);
+      host.send(JSON.stringify(message));
+    }
   }
 }
 
