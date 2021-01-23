@@ -39,6 +39,7 @@ class RoutesController {
       ws.on('message', (message) => {
         const parsedMessage = JSON.parse(JSON.parse(message));
         console.log(parsedMessage);
+
         switch (parsedMessage.eventType) {
           case 'pingTestResponse':
             console.log('is ping test');
