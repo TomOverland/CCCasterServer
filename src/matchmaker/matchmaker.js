@@ -44,6 +44,7 @@ class Matchmaker {
     if (this.isGeolocationResponse(parsedMessage)) {
       console.log('is geolocation response');
       this.handleGeolocationResponse(parsedMessage, ws);
+      selectPlayerToTest(ws);
     } else {
       const opponent = this.queue[ws.regionQueue][ws.matcherID].isMatchedWith;
       if (opponent) {
@@ -54,13 +55,14 @@ class Matchmaker {
       // Ping Comparison Function work goes here
       evaluateOpponentPingResult(parsedMessage, ws);
     }
-    const respObj = {
-      eventType: 'joinMatch',
-      matcherAddress: '192.168.1.1',
-      matcherPort: '12345',
-    };
+
+    // const respObj = {
+    //   eventType: 'joinMatch',
+    //   matcherAddress: '192.168.1.1',
+    //   matcherPort: '12345',
+    // };
     // res.json(this.queue);
-    ws.send(JSON.stringify(respObj));
+    // ws.send(JSON.stringify(respObj));
   }
 
   // handlePortOpen(req, res) {
