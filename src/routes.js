@@ -16,35 +16,23 @@ class RoutesController {
   }
 
   proxyRoutes() {
-    this.router.post(
-      '/get-matcher-address/',
-      bodyParser.json({
-        limit: '1024kb',
-        type: 'application/json',
-      }),
-      this.matchmaker.handleGetMatchers
-    );
-    this.router.post(
-      '/port-open/',
-      bodyParser.json({
-        limit: '1024kb',
-        type: 'application/json',
-      }),
-      this.matchmaker.handlePortOpen
-    );
     this.router.get('/dump-queues/', this.matchmaker.handleDumpQueue);
 
     this.wss.on('connection', (ws) => {
       this.matchmaker.handleJoinQueue(ws);
+
       ws.on('message', (message) => {
         const parsedMessage = JSON.parse(JSON.parse(message));
         console.log(parsedMessage);
+
         switch (parsedMessage.eventType) {
           case 'pingTestResponse':
-            console.log('is ping test');
             this.matchmaker.handlePingResult(ws, parsedMessage);
             break;
-          case 'sendOpenPort':
+          case 'portIsOpen':
+            this.matchmaker.handlePortIsOpen(ws, parsedMessage);
+            break;
+          case 'sendOpenPort': // THIS IS A DEBUG ROUTE
             const respObj = {
               eventType: 'openPort',
             };

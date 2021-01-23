@@ -19,7 +19,6 @@ class Matchmaker {
     };
     this.queue;
     this.maxPing = 126;
-    // this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handleGetMatchers = this.handleGetMatchers.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
@@ -31,16 +30,33 @@ class Matchmaker {
   }
 
   handleJoinQueue(ws) {
-    // TODO - check if IP already in a queue
     const matcherID = this.createMatcherID();
     ws.matcherID = matcherID;
     this.queue.notLocated[matcherID] = ws;
 
-    console.log(`matcherID is ${ws.matcherID}`);
+    console.log(`NEW MATCHER - matcherID is ${ws.matcherID}`);
     const respObj = {
       eventType: 'pingTest',
       matchers: constants.geolocationIps,
     };
+    ws.send(JSON.stringify(respObj));
+  }
+
+  handlePingResult(ws, parsedMessage) {
+    console.log('in handle ping result');
+    if (this.isGeolocationResponse(parsedMessage)) {
+      console.log('is geolocation response');
+      this.handleGeolocationResponse(parsedMessage, ws);
+    } else {
+      // Has Match work goes here
+      // Ping Comparison Function work goes here
+    }
+    const respObj = {
+      eventType: 'joinMatch',
+      matcherAddress: '192.168.1.1',
+      matcherPort: '12345',
+    };
+    // res.json(this.queue);
     ws.send(JSON.stringify(respObj));
   }
 
@@ -63,24 +79,6 @@ class Matchmaker {
       ],
     };
     res.json(respObj);
-  }
-
-  handlePingResult(ws, parsedMessage) {
-    // console.log('in handle ping result');
-    // if (this.isGeolocationResponse(parsedMessage)) {
-    //   console.log('is geolocation response');
-    //   this.handleGeolocationResponse(parsedMessage, ws);
-    // } else {
-    // Has Match work goes here
-    // Ping Comparison Function work goes here
-    // }
-    const respObj = {
-      eventType: 'joinMatch',
-      matcherAddress: '192.168.1.1',
-      matcherPort: '12345',
-    };
-    // res.json(this.queue);
-    ws.send(JSON.stringify(respObj));
   }
 
   handlePortOpen(req, res) {
@@ -127,28 +125,6 @@ class Matchmaker {
     // should return an array of three matchers to test
     // selected matchers should not be in the clientMatcher's badMatchIds arr
   }
-
-  deleteMatcher(matcherID) {
-    console.log('DELETE MATCHER', matcherID);
-  }
-
-  updateCheckin() {
-    // checkin logic
-  }
 }
 
 module.exports = Matchmaker;
-
-// handleJoinQueue(req, res) {
-//   // TODO - check if IP already in a queue
-//   const matcherID = this.createMatcherID();
-//   const newMatcher = new Matcher(matcherID, req.ip, this.deleteMatcher);
-//   this.queue.notLocated[matcherID] = newMatcher;
-
-//   const respObj = {
-//     clientMatcherID: newMatcher.matcherID,
-//     matchers: constants.geolocationIps,
-//   };
-
-//   res.json(respObj);
-// }
