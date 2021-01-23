@@ -40,6 +40,8 @@ class RoutesController {
             break;
           // case ''
         }
+
+        // ws.on('disconnect'... )
       });
     });
   }
