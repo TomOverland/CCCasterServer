@@ -1,7 +1,7 @@
 const Ids = require('ids');
 const idMaker = new Ids();
+const auth = require('../common/constants/dev-config');
 const _ = require('lodash');
-
 const Matcher = require('./matcher');
 const constants = require('../common/constants/constants');
 
@@ -107,9 +107,12 @@ class Matchmaker {
   }
 
   handleDumpQueue(req, res) {
-    // check req.headers for the presence of the Auth header
-    // if Auth header is not present, res.status(403)
-    res.json(this.queue);
+    if (req.headers.devclientid === auth.devClientID) {
+      return res.json(this.queue);
+    } else {
+      res.status(403);
+      res.json('Error: Forbidden')
+    }
   }
 
   handleGeolocationResponse(parsedMessage, ws) {
