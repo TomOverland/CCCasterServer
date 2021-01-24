@@ -46,6 +46,16 @@ Websocket messages should be stringified JSON objects that contain an eventType 
 }
 ```
 
+## noOpponents
+
+### There are no valid opponents. The server will try again in 10 seconds.
+
+```
+{
+    eventType: 'noOpponents'
+}
+```
+
 # Event Types Sent From Client To Server
 
 ## **pingTestResponse**
@@ -53,15 +63,17 @@ Websocket messages should be stringified JSON objects that contain an eventType 
 ### Contains results of ping tests to different client sessions. Please include average ping in the result.
 
 ```
+
 {
-    eventType: 'pingTestResponse',
-    matchers: [
-        {
-        matcherID: string,
-        ping: string
-        }
-    ]
+eventType: 'pingTestResponse',
+matchers: [
+{
+matcherID: string,
+ping: string
 }
+]
+}
+
 ```
 
 ## **portIsOpen**
@@ -69,10 +81,12 @@ Websocket messages should be stringified JSON objects that contain an eventType 
 ### Informs the server that the client has opened a port to allow a guest to join a match.
 
 ```
+
 {
-    eventType: 'portIsOpen',
-    port: string
+eventType: 'portIsOpen',
+port: string
 }
+
 ```
 
 ---
