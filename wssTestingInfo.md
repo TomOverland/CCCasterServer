@@ -43,7 +43,7 @@ To use the above, cahnge whichever region you want to be sorted into to the lowe
 Stringified JSON message for normal ping test result:
 
 ```
-"{\"eventType\":\"pingTestResult\",\"matchers\":[{\"matcherID\":\"MatcherID\",\"pingResult\":100}]}"
+"{\"eventType\":\"pingTestResponse\",\"matchers\":[{\"matcherID\":\"MatcherID\",\"ping\":100}]}"
 ```
 
 To use this, connect at least 2 WS connections, run the /dump-queues/ route in Postman, then paste a matcherID that is not assigned to the WS connection you're using into the matcherID.

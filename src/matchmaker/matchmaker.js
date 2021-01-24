@@ -1,8 +1,7 @@
 const Ids = require('ids');
 const idMaker = new Ids();
-const auth = require('../common/constants/dev-config');
+// const auth = require('../common/constants/dev-config');
 const _ = require('lodash');
-const Matcher = require('./matcher');
 const constants = require('../common/constants/constants');
 
 class Matchmaker {
@@ -16,11 +15,13 @@ class Matchmaker {
       JP: {}, // Japan
       AU: {}, // Australia
     };
-    this.queue;
     this.maxPing = 126;
     this.handleJoinQueue = this.handleJoinQueue.bind(this);
     this.handlePingResult = this.handlePingResult.bind(this);
     this.handleDumpQueue = this.handleDumpQueue.bind(this);
+    this.handlePortIsOpen = this.handlePortIsOpen.bind(this);
+    this.evaluateOpponentPingResult = this.evaluateOpponentPingResult.bind(this);
+    this.handleDisconnect = this.handleDisconnect.bind(this);
   }
   createMatcherID() {
     return idMaker.next();
@@ -45,39 +46,42 @@ class Matchmaker {
     if (this.isGeolocationResponse(parsedMessage)) {
       console.log('is geolocation response');
       this.handleGeolocationResponse(parsedMessage, ws);
+      this.selectPlayerToTest(ws);
     } else {
-      const opponent = this.queue[ws.regionQueue][ws.matcherID].isMatchedWith;
+      console.log('is not geolocation response');
+      const opponent = this.queue[ws.regionCode][ws.matcherID].isMatchedWith;
       if (opponent) {
         console.log('IN HANDLE PING RESULT - PLAYER HAS BEEN CLAIMED');
         console.log('TERMINATING');
         return; // player has been marked by opponent - that thread will start the match
       }
+      console.log('player has not been claimed', parsedMessage);
       // Ping Comparison Function work goes here
+      this.evaluateOpponentPingResult(parsedMessage, ws);
     }
-    const respObj = {
-      eventType: 'joinMatch',
-      matcherAddress: '192.168.1.1',
-      matcherPort: '12345',
-    };
-    // res.json(this.queue);
-    ws.send(JSON.stringify(respObj));
   }
 
-  handlePortOpen(req, res) {
-    const respObj = {
-      // if port status is "true", it is open.
-      portStatus: true,
+  handlePortIsOpen(host, parsedMessage) {
+    const message = {
+      eventType: 'joinMatch',
+      address: host._socket.remoteAddress,
+      port: parsedMessage.port,
     };
-    res.json(respObj);
+    this.queue[host.regionCode][host.isMatchedWith].send(JSON.stringify(message));
   }
 
   handleDumpQueue(req, res) {
-    if (req.headers.devclientid === auth.devClientID) {
-      return res.json(this.queue);
-    } else {
-      res.status(403);
-      res.json('Error: Forbidden')
-    }
+    // if (req.headers.devclientid === auth.devClientID) {
+    return res.json(this.queue);
+    // } else {
+    // res.status(403);
+    // res.json('Error: Forbidden');
+    // }
+  }
+
+  handleDisconnect(ws) {
+    console.log('Deleting user', ws.matcherID);
+    delete this.queue[ws.regionCode][ws.matcherID];
   }
 
   handleGeolocationResponse(parsedMessage, ws) {
@@ -103,9 +107,65 @@ class Matchmaker {
     return constants.regionCodes[regionPings[indexOfLowestPing].matcherID];
   }
 
-  selectMatchers(clientMatcherID, res) {
-    // should return an array of three matchers to test
-    // selected matchers should not be in the clientMatcher's badMatchIds arr
+  evaluateOpponentPingResult(parsedMessage, host) {
+    console.log(parsedMessage);
+    const opponent = this.queue[host.regionCode][parsedMessage.matchers[0].matcherID];
+    console.log('in evaluate ping');
+    console.log(parsedMessage.matchers[0].ping);
+    console.log(host.isMatchedWith);
+    console.log(opponent.isMatchedWith);
+    if (parsedMessage.matchers[0].ping <= this.maxPing && !host.isMatchedWith && !opponent.isMatchedWith) {
+      console.log('valid match given ping');
+      host.isMatchedWith = opponent.matcherID;
+      opponent.isMatchedWith = host.matcherID;
+      this.sendOpenPort(host);
+    } else {
+      this.selectPlayerToTest(host);
+    }
+  }
+
+  sendOpenPort(host) {
+    console.log('SEND OPEN PORT', host.matcherID);
+    const message = {
+      eventType: 'openPort',
+    };
+    host.send(JSON.stringify(message));
+  }
+
+  selectPlayerToTest(host) {
+    console.log('SELECT PLAYER TO TEST', host.matcherID);
+    const matcherIDs = Object.keys(this.queue[host.regionCode]);
+    let opponent = undefined;
+    let i = 0;
+    while (!opponent && i < matcherIDs.length) {
+      const matcher = this.queue[host.regionCode][matcherIDs[i]];
+      console.log('SELECT PLAYER TO TEST FOR', host.matcherID, matcher.matcherID);
+      if (!host.badMatchers.includes(matcherIDs[i]) && !matcher.isMatchedWith && matcher.matcherID !== host.matcherID) {
+        console.log('SELECT PLAYER TO TEST - FOUND');
+        opponent = matcher;
+      }
+      i++;
+    }
+    if (!opponent) {
+      console.log('NO OPPONENT FOR', host.matcherID);
+      const message = {
+        eventType: 'noOpponents',
+      };
+      host.send(JSON.stringify(message));
+      setTimeout(() => this.selectPlayerToTest(host), 10000);
+    } else if (!host.isMatchedWith) {
+      const message = {
+        eventType: 'pingTest',
+        matchers: [
+          {
+            matcherID: opponent.matcherID,
+            address: opponent._socket.remoteAddress,
+          },
+        ],
+      };
+      console.log('SELECT PLAYER TO TEST - SENDING TO', host.matcherID);
+      host.send(JSON.stringify(message));
+    }
   }
 }
 

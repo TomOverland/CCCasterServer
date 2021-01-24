@@ -43,6 +43,9 @@ class RoutesController {
 
         // ws.on('disconnect'... )
       });
+      ws.on('close', () => {
+        this.matchmaker.handleDisconnect(ws);
+      });
     });
   }
 }
