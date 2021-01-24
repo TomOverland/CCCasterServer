@@ -82,7 +82,7 @@ class Matchmaker {
       address: host._socket.remoteAddress,
       port: parsedMessage.port,
     };
-    host.isMatchedWith.send(JSON.stringify(message));
+    this.queue[host.regionCode][host.isMatchedWith].send(JSON.stringify(message));
   }
 
   handleDumpQueue(req, res) {
@@ -126,8 +126,8 @@ class Matchmaker {
     console.log(opponent.isMatchedWith);
     if (parsedMessage.matchers[0].ping <= this.maxPing && !host.isMatchedWith && !opponent.isMatchedWith) {
       console.log('valid match given ping');
-      host.isMatchedWith = opponent;
-      opponent.isMatchedWith = host;
+      host.isMatchedWith = opponent.matcherID;
+      opponent.isMatchedWith = host.matcherID;
       this.sendOpenPort(host);
     } else {
       this.selectPlayerToTest(host);
