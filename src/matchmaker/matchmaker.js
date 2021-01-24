@@ -20,6 +20,7 @@ class Matchmaker {
     this.handlePingResult = this.handlePingResult.bind(this);
     this.handleDumpQueue = this.handleDumpQueue.bind(this);
     this.handlePortIsOpen = this.handlePortIsOpen.bind(this);
+    this.evaluateOpponentPingResult = this.evaluateOpponentPingResult.bind(this);
   }
   createMatcherID() {
     return idMaker.next();
@@ -53,7 +54,7 @@ class Matchmaker {
         console.log('TERMINATING');
         return; // player has been marked by opponent - that thread will start the match
       }
-      console.log('player has not been claimed');
+      console.log('player has not been claimed', parsedMessage);
       // Ping Comparison Function work goes here
       this.evaluateOpponentPingResult(parsedMessage, ws);
     }
@@ -117,6 +118,7 @@ class Matchmaker {
   }
 
   evaluateOpponentPingResult(parsedMessage, host) {
+    console.log(parsedMessage);
     const opponent = this.queue[host.regionCode][parsedMessage.matchers[0].matcherID];
     console.log('in evaluate ping');
     console.log(parsedMessage.matchers[0].ping);
@@ -148,10 +150,11 @@ class Matchmaker {
     while (!opponent && i < matcherIDs.length) {
       const matcher = this.queue[host.regionCode][matcherIDs[i]];
       console.log('SELECT PLAYER TO TEST FOR', host.matcherID, matcher.matcherID);
-      if (!host.badMatchers.includes(matcherIDs[i]) && !matcher.isMatchedWith) {
+      if (!host.badMatchers.includes(matcherIDs[i]) && !matcher.isMatchedWith && matcher.matcherID !== host.matcherID) {
         console.log('SELECT PLAYER TO TEST - FOUND');
         opponent = matcher;
       }
+      i++;
     }
     if (!opponent) {
       console.log('NO OPPONENT FOR', host.matcherID);
@@ -160,8 +163,7 @@ class Matchmaker {
       };
       host.send(JSON.stringify(message));
       setTimeout(() => this.selectPlayerToTest(host), 10000);
-    }
-    if (!host.isMatchedWith) {
+    } else if (!host.isMatchedWith) {
       const message = {
         eventType: 'pingTest',
         matchers: [
