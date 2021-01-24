@@ -21,6 +21,7 @@ class Matchmaker {
     this.handleDumpQueue = this.handleDumpQueue.bind(this);
     this.handlePortIsOpen = this.handlePortIsOpen.bind(this);
     this.evaluateOpponentPingResult = this.evaluateOpponentPingResult.bind(this);
+    this.handleDisconnect = this.handleDisconnect.bind(this);
   }
   createMatcherID() {
     return idMaker.next();
@@ -58,23 +59,7 @@ class Matchmaker {
       // Ping Comparison Function work goes here
       this.evaluateOpponentPingResult(parsedMessage, ws);
     }
-
-    // const respObj = {
-    //   eventType: 'joinMatch',
-    //   matcherAddress: '192.168.1.1',
-    //   matcherPort: '12345',
-    // };
-    // res.json(this.queue);
-    // ws.send(JSON.stringify(respObj));
   }
-
-  // handlePortOpen(req, res) {
-  //   const respObj = {
-  //     // if port status is "true", it is open.
-  //     portStatus: true,
-  //   };
-  //   res.json(respObj);
-  // }
 
   handlePortIsOpen(host, parsedMessage) {
     const message = {
@@ -92,6 +77,11 @@ class Matchmaker {
     // res.status(403);
     // res.json('Error: Forbidden');
     // }
+  }
+
+  handleDisconnect(ws) {
+    console.log('Deleting user', ws.matcherID);
+    delete this.queue[ws.regionCode][ws.matcherID];
   }
 
   handleGeolocationResponse(parsedMessage, ws) {
