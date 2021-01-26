@@ -49,3 +49,7 @@ Stringified JSON message for normal ping test result:
 To use this, connect at least 2 WS connections, run the /dump-queues/ route in Postman, then paste a matcherID that is not assigned to the WS connection you're using into the matcherID.
 
 If pingResult is below 126, the connection process will start. If above 126, a new matcher should be sent back.
+
+```
+"{\"eventType\":\"portIsOpen\",\"port\":12345}"
+```
