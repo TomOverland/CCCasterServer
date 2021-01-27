@@ -7,7 +7,7 @@
     "start": "node src/index.js",
     "start:local": "nodemon src/index.js",
     "test": "node_modules/.bin/jest",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd src && cd client && npm install && npm run build"
   },
   "husky": {
     "hooks": {
