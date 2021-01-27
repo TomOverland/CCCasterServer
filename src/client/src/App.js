@@ -12,12 +12,12 @@ function App() {
       <Router>
         <NavBar />
         <Switch>
-          <Route exact path='/'>
+          <Route exact path="/">
             <Landing />
             {/* <Home /> */}
           </Route>
         </Switch>
-        <Route path='/home' component={Home} />
+        <Route path="/home" component={Home} />
       </Router>
     </div>
   );
