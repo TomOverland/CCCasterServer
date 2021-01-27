@@ -5,7 +5,7 @@ const Matchmaker = require('./matchmaker/matchmaker');
 const RoutesController = require('./routes');
 const log = require('./common/utils/logger');
 
-const port = process.env.PORT || 3030;
+const port = process.env.PORT || 8080;
 
 const app = express();
 const server = require('http').createServer(app);
