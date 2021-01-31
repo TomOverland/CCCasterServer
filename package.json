@@ -7,9 +7,9 @@
     "start": "if-env NODE_ENV=production && npm run start:prod || npm run start:dev",
     "start:prod": "node src/index.js",
     "start:dev": "concurrently \"nodemon --ignore client/\" \"npm run client\"",
-    "client": "cd src/client && npm run start",
-    "install": "cd src/client && npm install",
-    "build": "cd src/client && npm run build",
+    "client": "cd client && npm run start",
+    "install": "cd client && npm install",
+    "build": "cd client && npm run build",
     "heroku-postbuild": "npm run install && npm run build",
     "test": "node_modules/.bin/jest"
   },
