@@ -12,7 +12,10 @@ const server = require('http').createServer(app);
 
 // Serve Static Assests to Heroku
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('client/build'));
+  app.use(express.static('src/client/build'));
+  //   app.get("*", (req, res) => {
+  //       res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  //   })
 }
 
 const wss = new WebSocket.Server({ server });
