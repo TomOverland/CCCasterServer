@@ -10,6 +10,11 @@ const port = process.env.PORT || 3030;
 const app = express();
 const server = require('http').createServer(app);
 
+// Serve Static Assests to Heroku
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+}
+
 const wss = new WebSocket.Server({ server });
 
 const matchmaker = new Matchmaker();
